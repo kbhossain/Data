@@ -1,0 +1,55 @@
+df = structure(list(Station = c(91L, 92L, 94L, 95L, 96L, 97L, 98L, 
+99L, 103L, 105L, 106L, 107L, 112L, 113L, 114L, 115L, 116L, 117L, 
+119L, 122L, 123L), PC1 = c(-1.12015813, -0.162603353, -0.691170969, 
+1.290790838, -1.544758302, -0.027602401, -0.614168423, -0.495333696, 
+1.279949324, -0.63809094, -0.122668147, 0.744142235, -0.778789917, 
+-2.633418969, 0.758488847, -1.066042887, -0.721002477, 1.079359567, 
+-0.175695907, 5.318351482, 0.320422224), PC2 = c(0.415530088, 
+0.666545002, 0.695404632, -0.554688073, 0.222592134, 0.697855329, 
+1.242555625, 0.64505761, 0.702722431, 0.86363373, 0.827648227, 
+1.204083925, -4.232859175, -1.636251717, -0.685291914, 1.16637059, 
+-0.122979187, -1.485372609, 0.079916797, -0.402557579, -0.309915867
+), PC3 = c(0.698238358, -0.071855245, -0.563762392, -0.382756976, 
+0.224635711, -0.786947583, -1.983627389, -0.032803567, -0.465769148, 
+-0.076804882, -1.775067301, -0.203906481, -0.419354014, -0.121035409, 
+-1.171532233, 3.578306494, 0.91365978, 0.951076125, 0.516367241, 
+0.770666924, 0.402271986), cluster = structure(c(2L, 2L, 2L, 
+2L, 2L, 2L, 2L, 2L, 4L, 4L, 4L, 4L, 3L, 3L, 3L, 3L, 3L, 3L, 1L, 
+1L, 1L), .Label = c("1", "2", "3", "4"), class = "factor")), row.names = c(NA, 
+-21L), class = "data.frame")
+
+set.seed(137)
+km = kmeans(df, 4, nstart=25)
+df$cluster = factor(kmeans(df, 4)$cluster)
+shapes <- c(15, 17, 18, 19)
+shapes1 <- shapes[as.numeric(km$cluster)]
+
+library(rgl)
+
+plot3d(df[,-1], type = "n")
+pch3d(df[,-1], pch = shapes1, col = rainbow(4)[km$cluster], cex = 0.5)
+text3d(df[,-1], text = df[,1], pos=4)
+
+for (i in 1:4) {
+  cl <- subset(df, cluster == i)
+  if (nrow(cl) > 3) {
+    sigma <- cov(cl[,2:4])
+    mu <- apply(cl[,2:4], 2, mean)
+    shade3d(ellipse3d(sigma, centre = mu), alpha = 0.2, col = rainbow(4)[i])
+  }
+}
+
+legend3d("right", pch = shapes, col = rainbow(4), 
+         legend = paste("Cluster", 1:4), cex=2)
+rgl.snapshot( "3dplot.png", fmt = "png", top = TRUE )
+Warning messages:
+1: In rgl.snapshot("3dplot.png", fmt = "png", top = TRUE) :
+  RGL: PNG Pixmap Saver Warning: Image width is zero in IHDR
+2: In rgl.snapshot("3dplot.png", fmt = "png", top = TRUE) :
+  RGL: PNG Pixmap Saver Warning: Image height is zero in IHDR
+3: In rgl.snapshot("3dplot.png", fmt = "png", top = TRUE) :
+  RGL: PNG Pixmap Saver Error: Invalid IHDR data
+4: In rgl.snapshot("3dplot.png", fmt = "png", top = TRUE) :
+  RGL: PNG Pixmap Saver Error: an error occured
+5: In rgl.snapshot("3dplot.png", fmt = "png", top = TRUE) :
+  'rgl.snapshot' failed
